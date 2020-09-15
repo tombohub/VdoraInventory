@@ -49,6 +49,7 @@ async function getCookies() {
 
 /**
  * Get the recent orders data
+ * 
  * @param {object} cookieJar cookies aquired in login request
  * @returns {JSON} recent orders data
  */
@@ -84,10 +85,13 @@ async function getSaleDetailsPage(saleId, cookieJar) {
 async function parseSaleDetailsPage(html) {
     const $ = cheerio.load(html)
     const saleDetails = {}
+    
+    console.log("Parsing sale details page...")
+    
     saleDetails.productName = $('td.def-font').eq(1).text()
     saleDetails.SKU = $('td.def-font').eq(2).text()
+    saleDetails.quantity = $('td.def-font').eq(3).text()
     saleDetails.price = $('.price').first().text()
-    saleDetails.nooksTax = $('.price').eq(3).text()
 
     return saleDetails
 }
@@ -98,6 +102,7 @@ async function parseSaleDetailsPage(html) {
  * @param {Array} ordersData orders fetched from Nooks dashboard
  * @param {int} last_id last order(sale) id which is recorderd in Google Sheets
  * @returns {Array} array of new, yet unrecorded orders (sales)
+ * 
  * 
  */
 async function selectNewOrders(ordersData, last_id) {
@@ -113,17 +118,23 @@ async function selectNewOrders(ordersData, last_id) {
 
 
 /**
- * gets the complete sales data
+ * gets the final sales data ready for Google Sheets
  * @param {Array} newOrdersData data of new orders since the last recorded order
  * @param {object} cookieJar 
  */
 async function getNewSalesData(newOrdersData, cookieJar) {
     let newSalesData = []
 
+    console.log('Getting new sales data....')
+
     for (let order of newOrdersData) {
         const html = await getSaleDetailsPage(order.id, cookieJar)
         const saleDetails = await parseSaleDetailsPage(html)
-        newSalesData.push(Object.assign({id: order.id, date: order.date_add}, saleDetails))
+
+        // remove the 'time' from date
+        order.date = order.date_add.substr(0,10)
+
+        newSalesData.push(Object.assign({id: order.id, date: order.date}, saleDetails))
     }
 
     return newSalesData
@@ -131,16 +142,48 @@ async function getNewSalesData(newOrdersData, cookieJar) {
 }
 
 
+/**
+ * Gets the highest Sale Id from the sales data. Use to update the last_sale_id sheet cell.
+ * Using for loops in case Nooks changes their API
+ * @param {Array} sales sales data from Nooks  
+ * @return {Int} highest sale id 
+ */
+async function getHighestSaleId(salesData) {
+    let newSaleId = ''
+    for(let sale of salesData) {
+        if (sale.id > newSaleId) {
+            newSaleId = sale.id
+        }
+    }
 
-async function getSales() {
+    return newSaleId
+}
+
+
+
+/************* MAIN FUNCTION ***************/
+
+/**
+ * Gets the new sales from Nooks since the last sale inserted into GSheets
+ * @param {int} saleId last sale id recorded in Google Sheets
+ * @returns {Object} {data:data, highestId:highestId} new sales data ready to insert into Google Sheets
+ */
+async function getSales(saleId) {
+    const sales = {}
+
     const cookieJar = await getCookies()
-    const neOrders = await selectNewOrders(JSON.parse(fs.readFileSync('resources/ordersData.json')), 2015749)
-    const data = await getNewSalesData(neOrders, cookieJar)
-    console.log(JSON.stringify(data))
+    const ordersData = await getOrdersData(cookieJar)
+    const newOrdersData = await selectNewOrders(ordersData, saleId)
+    const data = await getNewSalesData(newOrdersData, cookieJar)
+    const highestId = await getHighestSaleId(data)
 
-   
+    return {
+        data: data,
+        highestId: highestId
+    }
 }
 
 
 module.exports = {getSales}
+
 
