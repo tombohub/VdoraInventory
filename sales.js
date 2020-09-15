@@ -2,7 +2,6 @@
 
 const util = require('util')
 const request = util.promisify(require('request'))
-const fs = require('fs')
 const cheerio = require('cheerio')
 
 
@@ -169,7 +168,6 @@ async function getHighestSaleId(salesData) {
  * @returns {Object} {data:data, highestId:highestId} new sales data ready to insert into Google Sheets
  */
 async function getSales(saleId) {
-    const sales = {}
 
     const cookieJar = await getCookies()
     const ordersData = await getOrdersData(cookieJar)
