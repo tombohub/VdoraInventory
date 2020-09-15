@@ -1,0 +1,27 @@
+{
+  "name": "vdora-inventory-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "google-spreadsheet": "^3.0.13",
+    "googleapis": "^59.0.0",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.13",
+    "eslint": "^7.8.1",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "jest": "^26.4.2"
+  }
+}
