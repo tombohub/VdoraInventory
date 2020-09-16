@@ -1,5 +1,6 @@
 'use strict'
 
+require('dotenv').config()
 const util = require('util')
 const request = util.promisify(require('request'))
 const cheerio = require('cheerio')
@@ -9,8 +10,8 @@ const cheerio = require('cheerio')
  * login credentials
  */
 const formData = {
-    wk_email: "kim@projectvdora.com",
-    wk_password: "QueVidorraTienes",
+    wk_email: process.env.WK_EMAIL,
+    wk_password: process.env.WK_PASSWORD,
     redirect_url: '',
     wk_login_submit: ''
 }
