@@ -1,5 +1,6 @@
 'use strict'
 
+require('dotenv').config()
 const util = require('util')
 const request = util.promisify(require('request'))
 const cheerio = require('cheerio')
