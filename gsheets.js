@@ -39,6 +39,7 @@ async function getLastSaleId() {
     await sheet.loadCells('C2')
     const lastSaleId = sheet.getCellByA1('C2')
     
+    console.log('Last sale ID is:', lastSaleId.value)
     return lastSaleId.value
 }
 

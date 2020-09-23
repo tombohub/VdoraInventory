@@ -33,7 +33,7 @@ const ordersUrl = 'http://sell.thenooks.ca/index.php?p=listing_data&draw=1&colum
  */
 async function getCookies() {
     let cookieJar = request.jar()
-    
+
     const options = {
         method: 'POST',
         form: formData,
@@ -42,8 +42,10 @@ async function getCookies() {
         followAllRedirects: true
     }
     
+    console.log('Getting cookies...')
     await request(options)
 
+    console.log('Done')
     return cookieJar
 }
 
@@ -54,12 +56,17 @@ async function getCookies() {
  * @returns {JSON} recent orders data
  */
 async function getOrdersData(cookieJar) {
-
+    console.log('Getting order data')
+ 
     const response = await request(ordersUrl, {jar: cookieJar})
-    const ordersData = JSON.parse(response.body)
-    
-    return Array.from(ordersData.data)
+    const ordersData = await JSON.parse(response.body)
 
+    if (ordersData.status !== 'FAILURE') {
+        console.log('Order data is :', ordersData.data)
+        return Array.from(ordersData.data)
+    } else {
+        console.log('Not good:', ordersData.message)
+    }
 }
 
 /**
