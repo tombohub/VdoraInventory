@@ -1,72 +1,72 @@
-'use strict'
+"use strict";
 
-require('dotenv').config()
-const util = require('util')
-const request = util.promisify(require('request'))
-const cheerio = require('cheerio')
-
+require("dotenv").config();
+const util = require("util");
+const request = util.promisify(require("request"));
+const cheerio = require("cheerio");
 
 /**
  * login credentials
  */
 const formData = {
-    wk_email: process.env.WK_EMAIL,
-    wk_password: process.env.WK_PASSWORD,
-    redirect_url: '',
-    wk_login_submit: ''
-}
+  wk_email: process.env.WK_EMAIL,
+  wk_password: process.env.WK_PASSWORD,
+  redirect_url: "",
+  wk_login_submit: "",
+};
 
 /**
  * login url where we post the login credentials and receive cookies
  */
-const loginUrl = 'http://sell.thenooks.ca/index.php?p=login_process&sid=17352'
+const loginUrl =
+  "http://sell.thenooks.ca/index.php?p=login_process&sid=17352";
 
 /**
  * api point from which we receive sales data
  */
-const ordersUrl = 'http://sell.thenooks.ca/index.php?p=listing_data&draw=1&columns%5B0%5D%5Bdata%5D=date_add&columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=false&columns%5B0%5D%5Borderable%5D=false&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=id&columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=true&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=order_name&columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=true&columns%5B2%5D%5Borderable%5D=true&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=date_add&columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=true&columns%5B3%5D%5Borderable%5D=true&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=customer&columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=true&columns%5B4%5D%5Borderable%5D=true&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=gateway&columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=true&columns%5B5%5D%5Borderable%5D=true&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B6%5D%5Bdata%5D=payment_status&columns%5B6%5D%5Bname%5D=&columns%5B6%5D%5Bsearchable%5D=true&columns%5B6%5D%5Borderable%5D=true&columns%5B6%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B6%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B7%5D%5Bdata%5D=tracking_id&columns%5B7%5D%5Bname%5D=&columns%5B7%5D%5Bsearchable%5D=false&columns%5B7%5D%5Borderable%5D=true&columns%5B7%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B7%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B8%5D%5Bdata%5D=fulfillment&columns%5B8%5D%5Bname%5D=&columns%5B8%5D%5Bsearchable%5D=true&columns%5B8%5D%5Borderable%5D=true&columns%5B8%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B8%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B9%5D%5Bdata%5D=order_prepare_status&columns%5B9%5D%5Bname%5D=&columns%5B9%5D%5Bsearchable%5D=true&columns%5B9%5D%5Borderable%5D=true&columns%5B9%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B9%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B10%5D%5Bdata%5D=order_prepare_status&columns%5B10%5D%5Bname%5D=&columns%5B10%5D%5Bsearchable%5D=true&columns%5B10%5D%5Borderable%5D=true&columns%5B10%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B10%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B11%5D%5Bdata%5D=11&columns%5B11%5D%5Bname%5D=&columns%5B11%5D%5Bsearchable%5D=false&columns%5B11%5D%5Borderable%5D=false&columns%5B11%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B11%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=1&order%5B0%5D%5Bdir%5D=desc&start=0&length=15&search%5Bvalue%5D=&search%5Bregex%5D=false&p_value=order&sid=17352&type=false&_=1599811611520'
-
+const ordersUrl =
+  "http://sell.thenooks.ca/index.php?p=listing_data&draw=1&columns%5B0%5D%5Bdata%5D=date_add&columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=false&columns%5B0%5D%5Borderable%5D=false&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=id&columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=true&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=order_name&columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=true&columns%5B2%5D%5Borderable%5D=true&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=date_add&columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=true&columns%5B3%5D%5Borderable%5D=true&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=customer&columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=true&columns%5B4%5D%5Borderable%5D=true&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=gateway&columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=true&columns%5B5%5D%5Borderable%5D=true&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B6%5D%5Bdata%5D=payment_status&columns%5B6%5D%5Bname%5D=&columns%5B6%5D%5Bsearchable%5D=true&columns%5B6%5D%5Borderable%5D=true&columns%5B6%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B6%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B7%5D%5Bdata%5D=tracking_id&columns%5B7%5D%5Bname%5D=&columns%5B7%5D%5Bsearchable%5D=false&columns%5B7%5D%5Borderable%5D=true&columns%5B7%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B7%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B8%5D%5Bdata%5D=fulfillment&columns%5B8%5D%5Bname%5D=&columns%5B8%5D%5Bsearchable%5D=true&columns%5B8%5D%5Borderable%5D=true&columns%5B8%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B8%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B9%5D%5Bdata%5D=order_prepare_status&columns%5B9%5D%5Bname%5D=&columns%5B9%5D%5Bsearchable%5D=true&columns%5B9%5D%5Borderable%5D=true&columns%5B9%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B9%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B10%5D%5Bdata%5D=order_prepare_status&columns%5B10%5D%5Bname%5D=&columns%5B10%5D%5Bsearchable%5D=true&columns%5B10%5D%5Borderable%5D=true&columns%5B10%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B10%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B11%5D%5Bdata%5D=11&columns%5B11%5D%5Bname%5D=&columns%5B11%5D%5Bsearchable%5D=false&columns%5B11%5D%5Borderable%5D=false&columns%5B11%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B11%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=1&order%5B0%5D%5Bdir%5D=desc&start=0&length=15&search%5Bvalue%5D=&search%5Bregex%5D=false&p_value=order&sid=17352&type=false&_=1599811611520";
 
 /**
  * Gets the cookies after login so they can be used for further requests
  * @returns {object} cookies to pass for further requests
  */
 async function getCookies() {
-    let cookieJar = request.jar()
+  let cookieJar = request.jar();
 
-    const options = {
-        method: 'POST',
-        form: formData,
-        url: loginUrl,
-        jar: cookieJar,
-        followAllRedirects: true
-    }
-    
-    console.log('Getting cookies...')
-    await request(options)
+  const options = {
+    method: "POST",
+    form: formData,
+    url: loginUrl,
+    jar: cookieJar,
+    followAllRedirects: true,
+  };
 
-    console.log('Done')
-    return cookieJar
+  console.log("Getting cookies...");
+  await request(options);
+
+  console.log("Done");
+  return cookieJar;
 }
 
 /**
  * Get the recent orders data
- * 
+ *
  * @param {object} cookieJar cookies aquired in login request
  * @returns {JSON} recent orders data
  */
 async function getOrdersData(cookieJar) {
-    console.log('Getting order data')
- 
-    const response = await request(ordersUrl, {jar: cookieJar})
-    const ordersData = await JSON.parse(response.body)
+  console.log("Getting order data");
 
-    if (ordersData.status !== 'FAILURE') {
-        console.log('Order data is :', ordersData.data)
-        return Array.from(ordersData.data)
-    } else {
-        console.log('Not good:', ordersData.message)
-    }
+  const response = await request(ordersUrl, { jar: cookieJar });
+  const ordersData = await JSON.parse(response.body);
+
+  if (ordersData.status !== "FAILURE") {
+    console.log("Order data is :", ordersData.data);
+    return Array.from(ordersData.data);
+  } else {
+    console.log("Not good:", ordersData.message);
+  }
 }
 
 /**
@@ -76,97 +76,105 @@ async function getOrdersData(cookieJar) {
  * @returns {string} html of the sale details page
  */
 async function getSaleDetailsPage(saleId, cookieJar) {
+  const url = `http://sell.thenooks.ca/index.php?p=order_desc&oid=${saleId}`;
+  const response = await request(url, { jar: cookieJar });
 
-    const url = `http://sell.thenooks.ca/index.php?p=order_desc&oid=${saleId}`
-    const response = await request(url, {jar: cookieJar})
-
-    return response.body
+  return response.body;
 }
-
 
 /**
- * Parse and return sale details from sale details page 
+ * Parse and return sale details from sale details page
  * @param {string} html html of sale details page to be parsed
- * @returns {object} single sale details 
+ * @returns {object} single sale details
  */
 async function parseSaleDetailsPage(html) {
-    const $ = cheerio.load(html)
-    const saleDetails = {}
-    
-    console.log("Parsing sale details page...")
-    
-    saleDetails.productName = $('td.def-font').eq(1).text()
-    saleDetails.SKU = $('td.def-font').eq(2).text()
-    saleDetails.quantity = $('td.def-font').eq(3).text()
-    saleDetails.price = $('.price').first().text()
+  const saleDetails = [];
 
-    return saleDetails
+  console.log("Parsing sale details page...");
+  const dom = await new JSDOM(html);
+
+  try {
+    const tableRows = await dom.window.document.querySelectorAll(
+      "div.mp-table table tr"
+    );
+
+    for (let i = 1; i < tableRows.length; i++) {
+      const tableCells = tableRows[i].querySelectorAll("td");
+
+      saleDetails.push({
+        productName: tableCells[1].textContent,
+        SKU: tableCells[2].textContent,
+        quantity: tableCells[3].textContent,
+        price: tableCells[4].textContent,
+      });
+    }
+
+    return saleDetails;
+  } catch (e) {
+    console.error(e);
+  }
 }
-
 
 /**
  * from recent orders select new orders since the last recorded order in Google Sheets
  * @param {Array} ordersData orders fetched from Nooks dashboard
  * @param {int} last_id last order(sale) id which is recorderd in Google Sheets
  * @returns {Array} array of new, yet unrecorded orders (sales)
- * 
- * 
+ *
+ *
  */
 async function selectNewOrders(ordersData, last_id) {
-    let newOrdersData = []
-    for (let order of ordersData) {
-        if (order.id > last_id) {
-            newOrdersData.push(order)
-        }
+  let newOrdersData = [];
+  for (let order of ordersData) {
+    if (order.id > last_id) {
+      newOrdersData.push(order);
     }
+  }
 
-    return newOrdersData
+  return newOrdersData;
 }
-
 
 /**
  * gets the final sales data ready for Google Sheets
  * @param {Array} newOrdersData data of new orders since the last recorded order
- * @param {object} cookieJar 
+ * @param {object} cookieJar
  */
 async function getNewSalesData(newOrdersData, cookieJar) {
-    let newSalesData = []
+  let newSalesData = [];
 
-    console.log('Getting new sales data....')
+  console.log("Getting new sales data....");
 
-    for (let order of newOrdersData) {
-        const html = await getSaleDetailsPage(order.id, cookieJar)
-        const saleDetails = await parseSaleDetailsPage(html)
+  for (let order of newOrdersData) {
+    const html = await getSaleDetailsPage(order.id, cookieJar);
+    const saleDetails = await parseSaleDetailsPage(html);
 
-        // remove the 'time' from date
-        order.date = order.date_add.substr(0,10)
+    // remove the 'time' from date
+    order.date = order.date_add.substr(0, 10);
 
-        newSalesData.push(Object.assign({id: order.id, date: order.date}, saleDetails))
-    }
+    newSalesData.push(
+      Object.assign({ id: order.id, date: order.date }, saleDetails)
+    );
+  }
 
-    return newSalesData
-    
+  return newSalesData;
 }
-
 
 /**
  * Gets the highest Sale Id from the sales data. Use to update the last_sale_id sheet cell.
  * Using for loops in case Nooks changes their API
- * @param {Array} sales sales data from Nooks  
- * @return {Int} highest sale id 
+ * @param {Array} sales sales data from Nooks
+ * @return {Int} highest sale id
  */
 async function getHighestSaleId(salesData) {
-    let newSaleId = ''
-    for(let sale of salesData) {
-        if (sale.id > newSaleId) {
-            newSaleId = sale.id
-        }
+  let newSaleId = "";
+  for (let sale of salesData) {
+    if (sale.id > newSaleId) {
+      newSaleId = sale.id;
     }
+  }
 
-    return newSaleId
+  return newSaleId;
 }
-
-
 
 /************* MAIN FUNCTION ***************/
 
@@ -176,20 +184,18 @@ async function getHighestSaleId(salesData) {
  * @returns {Object} {data:data, highestId:highestId} new sales data ready to insert into Google Sheets
  */
 async function getSales(saleId) {
+  const cookieJar = await getCookies();
+  const ordersData = await getOrdersData(cookieJar);
+  const newOrdersData = await selectNewOrders(ordersData, saleId);
+  const data = await getNewSalesData(newOrdersData, cookieJar);
+  const highestId = await getHighestSaleId(data);
 
-    const cookieJar = await getCookies()
-    const ordersData = await getOrdersData(cookieJar)
-    const newOrdersData = await selectNewOrders(ordersData, saleId)
-    const data = await getNewSalesData(newOrdersData, cookieJar)
-    const highestId = await getHighestSaleId(data)
-
-    return {
-        data: data,
-        highestId: highestId
-    }
+  return {
+    data: data,
+    highestId: highestId,
+  };
 }
 
+console.log(getSales(2182210));
 
-module.exports = {getSales}
-
-
+module.exports = { getSales };
