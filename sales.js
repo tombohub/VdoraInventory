@@ -4,6 +4,8 @@ require("dotenv").config();
 const util = require("util");
 const request = util.promisify(require("request"));
 const cheerio = require("cheerio");
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
 
 /**
  * login credentials
@@ -198,7 +200,5 @@ async function getSales(saleId) {
     highestId: highestId,
   };
 }
-
-console.log(getSales(2182210));
 
 module.exports = { getSales };
