@@ -138,6 +138,7 @@ async function selectNewOrders(ordersData, last_id) {
  * gets the final sales data ready for Google Sheets
  * @param {Array} newOrdersData data of new orders since the last recorded order
  * @param {object} cookieJar
+ * @returns {Array} sales data since the last recorded sale
  */
 async function getNewSalesData(newOrdersData, cookieJar) {
   let newSalesData = [];
@@ -151,9 +152,11 @@ async function getNewSalesData(newOrdersData, cookieJar) {
     // remove the 'time' from date
     order.date = order.date_add.substr(0, 10);
 
-    newSalesData.push(
-      Object.assign({ id: order.id, date: order.date }, saleDetails)
-    );
+    for (let saleDetail of saleDetails) {
+      newSalesData.push(
+        Object.assign({ id: order.id, date: order.date }, saleDetail)
+      );
+    }
   }
 
   return newSalesData;
